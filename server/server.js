@@ -11,6 +11,15 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
+const defaultDevOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const allowedOrigins = (
+  process.env.CORS_ORIGINS ||
+  process.env.CLIENT_URL ||
+  defaultDevOrigins.join(',')
+)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // ──────────────────────────────────────────────
 // Security Headers (all six required headers)
@@ -66,7 +75,19 @@ app.use((req, res, next) => {
 // ──────────────────────────────────────────────
 // CORS
 // ──────────────────────────────────────────────
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+}));
 
 // ──────────────────────────────────────────────
 // Rate Limiting
