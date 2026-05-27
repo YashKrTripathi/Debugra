@@ -40,6 +40,7 @@ import MobileBottomNav from './MobileBottomNav';
 import VideoCall from './VideoCall';
 import VotePopup from './VotePopup';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
+import MobileDrawer from './MobileDrawer';
 import { getSessionApiKey, isSecureApiKeyStored } from '../../services/secureApiKeyStore';
 import DebugOverlay from './DebugOverlay';
 import ComplexityOverlay from './ComplexityOverlay';
@@ -84,6 +85,7 @@ export default function EditorPage({ user }) {
   const [showDebugOverlay, setShowDebugOverlay] = useState(false);
   const [consoleCollapsed, setConsoleCollapsed] = useState(false);
   const [showComplexityOverlay, setShowComplexityOverlay] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const resizingRef = useRef(false);
 
   const toggleConsoleCollapsed = () => {
@@ -1682,8 +1684,24 @@ export default function EditorPage({ user }) {
         />
       )}
 
-      {/* Real-time Democratic Vote Popup */}
-      <VotePopup room={room} user={user} />
+{/* Real-time Democratic Vote Popup */}
+<VotePopup room={room} user={user} />
+
+      {/* Mobile Drawer */}
+      <MobileDrawer
+        isMobile={isMobile}
+        isOpen={drawerOpen}
+        onOpen={() => setDrawerOpen(true)}
+        onClose={() => setDrawerOpen(false)}
+        user={user}
+        editor={editor}
+        audioFeedback={audioFeedback}
+        showHistory={showHistory}
+        setShowHistory={setShowHistory}
+        onLoadCode={(code, language) => {
+          editor.loadCode(code, language);
+        }}
+      />
     </div>
   );
 }
