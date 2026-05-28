@@ -106,6 +106,8 @@ export default function EditorPage({ user }) {
     },
   });
 
+  const tabSizeRef = useRef(editor.tabSize);
+
   // ─── Room/Collaboration Logic ──────────────────────────────────────────────
   const room = useRoom({
     user,
@@ -136,6 +138,10 @@ export default function EditorPage({ user }) {
   useEffect(() => {
     ensureEditorFontLoaded(editor.fontFamily);
   }, [editor.fontFamily]);
+
+  useEffect(() => {
+    tabSizeRef.current = editor.tabSize;
+  }, [editor.tabSize]);
 
   // ─── AI Logic ─────────────────────────────────────────────────────────────
   const ai = useAI({
@@ -258,6 +264,33 @@ export default function EditorPage({ user }) {
   const handleEditorMount = (editorInstance) => {
     editorRef.current = editorInstance;
     window.__DEBUGRA_EDITOR__ = editorInstance;
+
+    const editorDomNode = editorInstance.getDomNode();
+    const handleDomKeyDown = (event) => {
+      if (room.isReadOnly || event.key !== 'Tab') return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const spaces = ' '.repeat(tabSizeRef.current);
+      const selection = editorInstance.getSelection();
+
+      if (selection) {
+        editorInstance.executeEdits('debugra-tab-indent', [
+          {
+            range: selection,
+            text: spaces,
+            forceMoveMarkers: true,
+          },
+        ]);
+      }
+    };
+
+    editorDomNode?.addEventListener('keydown', handleDomKeyDown, true);
+    editorInstance.onDidDispose(() => {
+      editorDomNode?.removeEventListener('keydown', handleDomKeyDown, true);
+    });
+
     editorInstance.onDidChangeCursorPosition((e) => {
       editor.setCursorPos({ line: e.position.lineNumber, col: e.position.column });
     });
@@ -821,6 +854,7 @@ export default function EditorPage({ user }) {
           {/* Monaco Editor */}
           <div
             id="editor-container"
+            className={editor.minimapEnabled ? '' : 'minimap-disabled'}
             style={{ flex: 1, minHeight: 0, opacity: room.isReadOnly ? 0.8 : 1 }}
           >
             {room.isReadOnly && (
@@ -859,6 +893,7 @@ export default function EditorPage({ user }) {
                   showSlider: 'always',
                   renderCharacters: false,
                 },
+                detectIndentation: false,
                 padding: { top: 12 },
                 scrollBeyondLastLine: false,
                 lineNumbers: 'on',

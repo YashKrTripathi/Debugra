@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -27,6 +27,20 @@ function getStoredBoolean(key, fallback) {
   return raw === 'true';
 }
 
+function getStoredDraft() {
+  try {
+    const raw = localStorage.getItem('debugra-editor-draft');
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.code !== 'string') return null;
+
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * useEditor
  * Manages local editor state:
@@ -35,8 +49,14 @@ function getStoredBoolean(key, fallback) {
  *   - save to cloud and download as file
  */
 export function useEditor({ user, onNeedAuth }) {
-  const [code, setCode] = useState(LANGUAGES[DEFAULT_LANGUAGE].template);
-  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
+  const initialDraft = getStoredDraft();
+  const initialLanguage =
+    initialDraft?.language && LANGUAGES[initialDraft.language]
+      ? initialDraft.language
+      : DEFAULT_LANGUAGE;
+
+  const [code, setCode] = useState(initialDraft?.code ?? LANGUAGES[initialLanguage].template);
+  const [language, setLanguage] = useState(initialLanguage);
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
   const [fontFamily, setFontFamily] = useState(
     () => localStorage.getItem('debugra-editor-font') ?? DEFAULT_EDITOR_FONT
@@ -55,10 +75,11 @@ export function useEditor({ user, onNeedAuth }) {
     getStoredNumber('debugra-autosave-interval', 0, AUTOSAVE_INTERVAL_VALUES)
   );
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 });
-  const [stdinValue, setStdinValue] = useState('');
+  const [stdinValue, setStdinValue] = useState(initialDraft?.stdinValue ?? '');
   const [stdinOpen, setStdinOpen] = useState(false);
 
   const [needsInput, setNeedsInput] = useState(false);
+  const autosaveSnapshotRef = useRef({ code, language, stdinValue });
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -93,22 +114,24 @@ export function useEditor({ user, onNeedAuth }) {
   }, [autosaveInterval]);
 
   useEffect(() => {
+    autosaveSnapshotRef.current = { code, language, stdinValue };
+  }, [code, language, stdinValue]);
+
+  useEffect(() => {
     if (!autosaveInterval) return undefined;
 
     const timer = window.setInterval(() => {
       localStorage.setItem(
         'debugra-editor-draft',
         JSON.stringify({
-          language,
-          code,
-          stdinValue,
+          ...autosaveSnapshotRef.current,
           savedAt: Date.now(),
         })
       );
     }, autosaveInterval);
 
     return () => window.clearInterval(timer);
-  }, [autosaveInterval, language, code, stdinValue]);
+  }, [autosaveInterval]);
 
   // Auto-open stdin panel when input-reading functions are detected
   useEffect(() => {
