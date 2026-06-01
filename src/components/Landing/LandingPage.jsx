@@ -245,33 +245,12 @@ const LANGUAGES = [
   'SQL',
   'Bash',
 ];
-<a href="#reviews" className="landing-nav-link">
-  Reviews
-</a>
 const STATS = [
   { value: '18+', label: 'Languages' },
   { value: '5', label: 'AI Features' },
   { value: '∞', label: 'Free Forever' },
   { value: '0', label: 'Setup Required' },
 ];
-const REVIEWS = [
-  {
-    name: 'Alex',
-    rating: 5,
-    review: 'The AI debugging tools helped me identify issues much faster.',
-  },
-  {
-    name: 'Priya',
-    rating: 5,
-    review: 'Real-time collaboration is smooth and easy to use.',
-  },
-  {
-    name: 'Rahul',
-    rating: 4,
-    review: 'Clean interface and excellent language support.',
-  },
-];
-
 const FAQ_ITEMS = [
   {
     question: 'What is Debugra?',
@@ -312,7 +291,23 @@ const TAG_COLORS = {
   Editor: { bg: 'rgba(59,130,246,0.12)', color: '#60a5fa' },
   Engine: { bg: 'rgba(249,115,22,0.12)', color: '#fb923c' },
 };
-
+const REVIEWS = [
+  {
+    name: 'Alex',
+    rating: 5,
+    review: 'Excellent debugging platform. The AI explanations are incredibly helpful.',
+  },
+  {
+    name: 'Sarah',
+    rating: 5,
+    review: 'The execution visualizer helped me understand recursion much faster.',
+  },
+  {
+    name: 'John',
+    rating: 4,
+    review: 'Clean interface and smooth collaboration features.',
+  },
+];
 export default function LandingPage() {
   const navigate = useNavigate();
   const featuresCarouselRef = useRef(null);
@@ -437,6 +432,9 @@ export default function LandingPage() {
           <a href="#faq" className="landing-nav-link">
             FAQ
           </a>
+          <button onClick={() => navigate('/feedback')} className="landing-nav-link nav-link-button">
+            Feedback
+          </button>
           <button onClick={() => setShowLogin(true)} className="landing-btn-outline">
             Log In
           </button>
@@ -496,6 +494,15 @@ export default function LandingPage() {
           <a href="#faq" className="mobile-dropdown-link" onClick={() => setMobileMenu(false)}>
             FAQ
           </a>
+          <button
+            className="mobile-dropdown-link"
+            onClick={() => {
+              setMobileMenu(false);
+              navigate('/feedback');
+            }}
+          >
+            Feedback
+          </button>
           <button
             onClick={() => {
               setShowLogin(true);
@@ -787,15 +794,6 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
-<section id="reviews" className="landing-section container">
-  <div className="section-header">
-    <p className="section-eyebrow">Community</p>
-    <h2 className="section-title">Feedback & Reviews</h2>
-    <p className="section-subtitle">
-      Hear what developers think about Debugra and share your own experience.
-    </p>
-  </div>
-
       {/* ===== FAQ ===== */}
       <section id="faq" className="landing-section container">
         <div className="section-header">
@@ -914,7 +912,7 @@ export default function LandingPage() {
       </button>
     </form>
   </div>
-</section>
+{/* </section> */}
       {/* ===== CTA ===== */}
       <section className="landing-cta-section">
         <div className="cta-glow" />
