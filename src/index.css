@@ -2128,6 +2128,12 @@ body {
   align-items: start;
 }
 
+.feedback-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .feedback-back-link {
   display: inline-flex;
   margin-bottom: 28px;
@@ -2135,6 +2141,12 @@ body {
   font-size: 0.82rem;
   font-weight: 700;
   text-decoration: none;
+}
+
+.feedback-copy .section-eyebrow {
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 8px;
 }
 
 .feedback-title {
